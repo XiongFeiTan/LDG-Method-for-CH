@@ -1,7 +1,4 @@
-matlab
+matlab/math
 
-math
+slove the CH 1D equation using DG method
 
-learn LDG method 
-
-slove the CH 1D equation finite element method
