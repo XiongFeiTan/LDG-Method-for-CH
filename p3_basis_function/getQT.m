@@ -1,0 +1,159 @@
+function [QT]  = getQT(tDof,Q,M,C,m,N,jw,phi1,phi2,phi3,phi4,dphi1,dphi2,dphi3,dphi4)
+%% calculate the U R from Q
+F=sparse(tDof*2,1);
+F(1:tDof,1)=M*Q;
+% URV=zeros(2*tDof,1);
+URV=C\F;
+U=URV(1:tDof,1);
+R=URV(tDof+1:2*tDof,1);
+%%
+P=zeros(tDof,1);
+for j=1:N
+    uphi=U(4*(j-1)+1)*phi1+U(4*(j-1)+2)*phi2+U(4*(j-1)+3)*phi3+U(4*(j-1)+4)*phi4;
+    rphi=R(4*(j-1)+1)*phi1+R(4*(j-1)+2)*phi2+R(4*(j-1)+3)*phi3+R(4*(j-1)+4)*phi4;
+    rhs=zeros(4,1);
+    rhs(1)=-sum(dphi1.*rphi.*uphi.*jw);
+    rhs(2)=-sum(dphi2.*rphi.*uphi.*jw);
+    rhs(3)=-sum(dphi3.*rphi.*uphi.*jw); 
+    rhs(4)=-sum(dphi4.*rphi.*uphi.*jw); 
+    if(j==1)
+        plrl=R(4*(N-1)+1)+R(4*(N-1)+2)+R(4*(N-1)+3)+R(4*(N-1)+4);
+        plrr=R(4*(j-1)+1)-R(4*(j-1)+2)+R(4*(j-1)+3)-R(4*(j-1)+4);
+        prrl=R(4*(j-1)+1)+R(4*(j-1)+2)+R(4*(j-1)+3)+R(4*(j-1)+4);
+        prrr=R(4*j+1)-R(4*j+2)+R(4*j+3)-R(4*j+4);
+        %
+        plur=U(4*(j-1)+1)-U(4*(j-1)+2)+U(4*(j-1)+3)-U(4*(j-1)+4);
+        prur=U(4*j+1)-U(4*j+2)+U(4*j+3)-U(4*j+4);
+        prul=U(4*(j-1)+1)+U(4*(j-1)+2)+U(4*(j-1)+3)+U(4*(j-1)+4);
+        plul=U(4*(N-1)+1)+U(4*(N-1)+2)+U(4*(N-1)+3)+U(4*(N-1)+4);  
+        %
+        rhs(1)=rhs(1)+(prrr+prrl)*(prur+prul)/4.0-(plrr+plrl)*(plur+plul)/4.0;
+        rhs(2)=rhs(2)+(prrr+prrl)*(prur+prul)/4.0+(plrr+plrl)*(plur+plul)/4.0;
+        rhs(3)=rhs(3)+(prrr+prrl)*(prur+prul)/4.0-(plrr+plrl)*(plur+plul)/4.0;
+        rhs(4)=rhs(4)+(prrr+prrl)*(prur+prul)/4.0+(plrr+plrl)*(plur+plul)/4.0;
+    elseif(j==N)
+        plrl=R(4*(j-2)+1)+R(4*(j-2)+2)+R(4*(j-2)+3)+R(4*(j-1)+4);
+        plrr=R(4*(j-1)+1)-R(4*(j-1)+2)+R(4*(j-1)+3)-R(4*(j-1)+4);
+        prrl=R(4*(j-1)+1)+R(4*(j-1)+2)+R(4*(j-1)+3)+R(4*(j-1)+4);
+        prrr=R(1)-R(2)+R(3)-R(4);
+        %
+        plur=U(4*(j-1)+1)-U(4*(j-1)+2)+U(4*(j-1)+3)-U(4*(j-1)+4);
+        prur=U(1)-U(2)+U(3)-U(4);
+        prul=U(4*(j-1)+1)+U(4*(j-1)+2)+U(4*(j-1)+3)+U(4*(j-1)+4);
+        plul=U(4*(j-2)+1)+U(4*(j-2)+2)+U(4*(j-2)+3)+U(4*(j-2)+4);  
+        %
+       rhs(1)=rhs(1)+(prrr+prrl)*(prur+prul)/4.0-(plrr+plrl)*(plur+plul)/4.0;
+        rhs(2)=rhs(2)+(prrr+prrl)*(prur+prul)/4.0+(plrr+plrl)*(plur+plul)/4.0;
+        rhs(3)=rhs(3)+(prrr+prrl)*(prur+prul)/4.0-(plrr+plrl)*(plur+plul)/4.0;
+        rhs(4)=rhs(4)+(prrr+prrl)*(prur+prul)/4.0+(plrr+plrl)*(plur+plul)/4.0;
+    else
+        plrl=R(4*(j-2)+1)+R(4*(j-2)+2)+R(4*(j-2)+3)+R(4*(j-1)+4);
+        plrr=R(4*(j-1)+1)-R(4*(j-1)+2)+R(4*(j-1)+3)-R(4*(j-1)+4);
+        prrl=R(4*(j-1)+1)+R(4*(j-1)+2)+R(4*(j-1)+3)+R(4*(j-1)+4);
+        prrr=R(4*j+1)-R(4*j+2)+R(4*j+3)-R(4*j+4);
+        %
+        plur=U(4*(j-1)+1)-U(4*(j-1)+2)+U(4*(j-1)+3)-U(4*(j-1)+4);
+        prur=U(4*j+1)-U(4*j+2)+U(4*j+3)-U(4*j+4);
+        prul=U(4*(j-1)+1)+U(4*(j-1)+2)+U(4*(j-1)+3)+U(4*(j-1)+4);
+        plul=U(4*(j-2)+1)+U(4*(j-2)+2)+U(4*(j-2)+3)+U(4*(j-2)+4);  
+        %
+        rhs(1)=rhs(1)+(prrr+prrl)*(prur+prul)/4.0-(plrr+plrl)*(plur+plul)/4.0;
+        rhs(2)=rhs(2)+(prrr+prrl)*(prur+prul)/4.0+(plrr+plrl)*(plur+plul)/4.0;
+        rhs(3)=rhs(3)+(prrr+prrl)*(prur+prul)/4.0-(plrr+plrl)*(plur+plul)/4.0;
+        rhs(4)=rhs(4)+(prrr+prrl)*(prur+prul)/4.0+(plrr+plrl)*(plur+plul)/4.0;
+    end
+	P(4*(j-1)+1:4*(j-1)+4)=m\rhs;
+end
+% P done
+%%  calculate QT & predeclare the space
+QT=zeros(tDof,1);
+for j=1:N  
+    uphi=U(4*(j-1)+1)*phi1+U(4*(j-1)+2)*phi2+U(4*(j-1)+3)*phi3+U(4*(j-1)+4)*phi4;
+    rphi=R(4*(j-1)+1)*phi1+R(4*(j-1)+2)*phi2+R(4*(j-1)+3)*phi3+R(4*(j-1)+4)*phi4;
+    pphi=P(4*(j-1)+1)*phi1+P(4*(j-1)+2)*phi2+P(4*(j-1)+3)*phi3+P(4*(j-1)+4)*phi4;
+    f=3/2.0.*(uphi.*uphi)-pphi+(rphi.*rphi)./2.0;
+    rhs=zeros(4,1);
+    rhs(1)=sum(dphi1.*f.*jw);
+    rhs(2)=sum(dphi2.*f.*jw);
+    rhs(3)=sum(dphi3.*f.*jw); 
+    rhs(4)=sum(dphi4.*f.*jw);  
+    if(j==1)
+        qtlrl=R(4*(N-1)+1)+R(4*(N-1)+2)+R(4*(N-1)+3)+R(4*(N-1)+4);
+        qtlrr=R(4*(j-1)+1)-R(4*(j-1)+2)+R(4*(j-1)+3)-R(4*(j-1)+4);
+        qtrrl=R(4*(j-1)+1)+R(4*(j-1)+2)+R(4*(j-1)+3)+R(4*(j-1)+4);
+        qtrrr=R(4*j+1)-R(4*j+2)+R(4*j+3)-R(4*j+4);
+        %
+        qtlur=U(4*(j-1)+1)-U(4*(j-1)+2)+U(4*(j-1)+3)-U(4*j+4);
+        qtlul=U(4*(N-1)+1)+U(4*(N-1)+2)+U(4*(N-1)+3)+U(4*(N-1)+4);
+        qtrur=U(4*j+1)-U(4*j+2)+U(4*j+3)-U(4*j+4);
+        qtrul=U(4*(j-1)+1)+U(4*(j-1)+2)+U(4*(j-1)+3)+U(4*j+4);
+        %
+        qtrpl=P(4*(j-1)+1)+P(4*(j-1)+2)+P(4*(j-1)+3)+P(4*(j-1)+4);
+        qtlpl=P(4*(N-1)+1)+P(4*(N-1)+2)+P(4*(N-1)+3)+P(4*(N-1)+4);
+        qtrpr=P(4*j+1)-P(4*j+2)+P(4*j+3)-P(4*j+4);
+        qtlpr=P(4*(j-1)+1)-P(4*(j-1)+2)+P(4*(j-1)+3)-P(4*(j-1)+4);
+        %
+        fr=(qtrur*qtrur+qtrur*qtrul+qtrul*qtrul)/2.0;
+        fl=(qtlur*qtlur+qtlur*qtlul+qtlul*qtlul)/2.0;
+        Br=(qtrrr*qtrrr+qtrrl*qtrrl)/4.0;
+        Bl=(qtlrr*qtlrr+qtlrl*qtlrl)/4.0;
+        %
+        rhs(1)=rhs(1)-(fr+Br-(qtrpr+qtrpl)/2.0)+(fl+Bl-(qtlpr+qtlpl)/2.0);
+        rhs(2)=rhs(2)-(fr+Br-(qtrpr+qtrpl)/2.0)-(fl+Bl-(qtlpr+qtlpl)/2.0);
+        rhs(3)=rhs(3)-(fr+Br-(qtrpr+qtrpl)/2.0)+(fl+Bl-(qtlpr+qtlpl)/2.0);
+        rhs(4)=rhs(4)-(fr+Br-(qtrpr+qtrpl)/2.0)-(fl+Bl-(qtlpr+qtlpl)/2.0);
+    elseif(j==N)
+        qtrrr=R(1)-R(2)+R(3)-R(4);
+        qtrrl=R(4*(j-1)+1)+R(4*(j-1)+2)+R(4*(j-1)+3)+R(4*(j-1)+4);
+        qtlrr=R(3*(j-1)+1)-R(4*(j-1)+2)+R(4*(j-1)+3)-R(4*(j-1)+4);
+        qtlrl=R(4*(j-2)+1)+R(4*(j-2)+2)+R(4*(j-2)+3)+R(4*(j-1)+4);
+        %
+        qtrur=U(1)-U(2)+U(3)-U(4);
+        qtrul=U(4*(j-1)+1)+U(4*(j-1)+2)+U(4*(j-1)+3)+U(4*(j-1)+4);
+        qtlur=U(4*(j-1)+1)-U(4*(j-1)+2)+U(4*(j-1)+3)-U(4*(j-1)+4);
+        qtlul=U(4*(j-2)+1)+U(4*(j-2)+2)+U(4*(j-2)+3)+U(4*(j-2)+4);
+        %
+        qtrpl=P(4*(j-1)+1)+P(4*(j-1)+2)+P(4*(j-1)+3)+P(4*(j-1)+4);
+        qtlpl=P(4*(j-2)+1)+P(4*(j-2)+2)+P(4*(j-2)+3)+P(4*(j-2)+4);
+        qtrpr=P(1)-P(2)+P(3)-P(4);
+        qtlpr=P(4*(j-1)+1)-P(4*(j-1)+2)+P(4*(j-1)+3)-P(4*(j-1)+4);
+        %
+        fr=(qtrur*qtrur+qtrur*qtrul+qtrul*qtrul)/2.0;
+        fl=(qtlur*qtlur+qtlur*qtlul+qtlul*qtlul)/2.0;
+        Br=(qtrrr*qtrrr+qtrrl*qtrrl)/4.0;
+        Bl=(qtlrr*qtlrr+qtlrl*qtlrl)/4.0;
+        %
+        rhs(1)=rhs(1)-(fr+Br-(qtrpr+qtrpl)/2.0)+(fl+Bl-(qtlpr+qtlpl)/2.0);
+        rhs(2)=rhs(2)-(fr+Br-(qtrpr+qtrpl)/2.0)-(fl+Bl-(qtlpr+qtlpl)/2.0);
+        rhs(3)=rhs(3)-(fr+Br-(qtrpr+qtrpl)/2.0)+(fl+Bl-(qtlpr+qtlpl)/2.0);
+        rhs(4)=rhs(4)-(fr+Br-(qtrpr+qtrpl)/2.0)-(fl+Bl-(qtlpr+qtlpl)/2.0);
+    else
+        qtrrr=R(4*j+1)-R(4*j+2)+R(4*j+3)-R(4*j+4);
+        qtrrl=R(4*(j-1)+1)+R(4*(j-1)+2)+R(4*(j-1)+3)+R(4*(j-1)+4);
+        qtlrr=R(4*(j-1)+1)-R(4*(j-1)+2)+R(4*(j-1)+3)-R(4*(j-1)+4);
+        qtlrl=R(4*(j-2)+1)+R(4*(j-2)+2)+R(4*(j-2)+3)+R(4*(j-2)+4);
+        %
+        qtrur=U(4*j+1)-U(4*j+2)+U(4*j+3)-U(4*j+4);
+        qtrul=U(4*(j-1)+1)+U(4*(j-1)+2)+U(4*(j-1)+3)+U(4*(j-1)+4);
+        qtlur=U(4*(j-1)+1)-U(4*(j-1)+2)+U(4*(j-1)+3)-U(4*(j-1)+4);
+        qtlul=U(4*(j-2)+1)+U(4*(j-2)+2)+U(4*(j-2)+3)+U(4*(j-2)+4);
+        %
+        qtrpl=P(4*(j-1)+1)+P(4*(j-1)+2)+P(4*(j-1)+3)+P(4*(j-1)+4);
+        qtlpl=P(4*(j-2)+1)+P(4*(j-2)+2)+P(4*(j-2)+3)+P(4*(j-2)+4);
+        qtrpr=P(4*j+1)-P(4*j+2)+P(4*j+3)-P(4*j+4);
+        qtlpr=P(4*(j-1)+1)-P(4*(j-1)+2)+P(4*(j-1)+3)-P(4*(j-1)+4);
+        %
+        fr=(qtrur*qtrur+qtrur*qtrul+qtrul*qtrul)/2.0;
+        fl=(qtlur*qtlur+qtlur*qtlul+qtlul*qtlul)/2.0;
+        Br=(qtrrr*qtrrr+qtrrl*qtrrl)/4.0;
+        Bl=(qtlrr*qtlrr+qtlrl*qtlrl)/4.0;
+        %
+        rhs(1)=rhs(1)-(fr+Br-(qtrpr+qtrpl)/2.0)+(fl+Bl-(qtlpr+qtlpl)/2.0);
+        rhs(2)=rhs(2)-(fr+Br-(qtrpr+qtrpl)/2.0)-(fl+Bl-(qtlpr+qtlpl)/2.0);
+        rhs(3)=rhs(3)-(fr+Br-(qtrpr+qtrpl)/2.0)+(fl+Bl-(qtlpr+qtlpl)/2.0);
+        rhs(4)=rhs(4)-(fr+Br-(qtrpr+qtrpl)/2.0)-(fl+Bl-(qtlpr+qtlpl)/2.0);
+    end
+	QT(4*(j-1)+1:4*(j-1)+4)=m\rhs;
+end
+% QT  done
+end

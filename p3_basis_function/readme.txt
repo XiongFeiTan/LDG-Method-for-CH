@@ -1,0 +1,156 @@
+流通量为单向的
+测试例子三：
+P=zeros(tDof,1);
+for j=1:N
+    uphi=U(3*(j-1)+1)*phi1+U(3*(j-1)+2)*phi2+U(3*(j-1)+3)*phi3;
+    rphi=R(3*(j-1)+1)*phi1+R(3*(j-1)+2)*phi2+R(3*(j-1)+3)*phi3;
+    rhs=zeros(3,1);
+    urphi=uphi.*rphi;
+    rhs(1)=-sum(dphi1.*urphi.*jw);
+    rhs(2)=-sum(dphi2.*urphi.*jw);
+    rhs(3)=-sum(dphi3.*urphi.*jw); 
+    if(j==1)
+        prrr=R(3*j+1)-R(3*j+2)+R(3*j+3);
+        prrl=R(3*(j-1)+1)+R(3*(j-1)+2)+R(3*(j-1)+3);
+        plrr=R(3*(j-1)+1)-R(3*(j-1)+2)+R(3*(j-1)+3);
+        plrl=R(3*(N-1)+1)+R(3*(N-1)+2)+R(3*(N-1)+3);
+        %
+        prur=U(3*j+1)-U(3*j+2)+U(3*j+3);
+        prul=U(3*(j-1)+1)+U(3*(j-1)+2)+U(3*(j-1)+3);
+        plur=U(3*(j-1)+1)-U(3*(j-1)+2)+U(3*(j-1)+3);
+        plul=U(3*(N-1)+1)+U(3*(N-1)+2)+U(3*(N-1)+3);
+        %
+        rhs(1)=rhs(1)+(prrr+prrl)*(prur+prul)/4.0-(plrr+plrl)*(plur+plul)/4.0;
+        rhs(2)=rhs(2)+(prrr+prrl)*(prur+prul)/4.0+(plrr+plrl)*(plur+plul)/4.0;
+        rhs(3)=rhs(3)+(prrr+prrl)*(prur+prul)/4.0-(plrr+plrl)*(plur+plul)/4.0;
+    elseif(j==N)
+        prrr=R(1)-R(2)+R(3);
+        prrl=R(3*(j-1)+1)+R(3*(j-1)+2)+R(3*(j-1)+3);
+        plrr=R(3*(j-1)+1)-R(3*(j-1)+2)+R(3*(j-1)+3);
+        plrl=R(3*(j-2)+1)+R(3*(j-2)+2)+R(3*(j-2)+3);
+        %
+        prur=U(1)-U(2)+U(3);
+        prul=U(3*(j-1)+1)+U(3*(j-1)+2)+U(3*(j-1)+3);
+        plur=U(3*(j-1)+1)-U(3*(j-1)+2)+U(3*(j-1)+3);
+        plul=U(3*(j-2)+1)+U(3*(j-2)+2)+U(3*(j-2)+3);
+        %
+        rhs(1)=rhs(1)+(prrr+prrl)*(prur+prul)/4.0-(plrr+plrl)*(plur+plul)/4.0;
+        rhs(2)=rhs(2)+(prrr+prrl)*(prur+prul)/4.0+(plrr+plrl)*(plur+plul)/4.0;
+        rhs(3)=rhs(3)+(prrr+prrl)*(prur+prul)/4.0-(plrr+plrl)*(plur+plul)/4.0;      
+    else
+        prrr=R(3*j+1)-R(3*j+2)+R(3*j+3);
+        prrl=R(3*(j-1)+1)+R(3*(j-1)+2)+R(3*(j-1)+3);
+        plrr=R(3*(j-1)+1)-R(3*(j-1)+2)+R(3*(j-1)+3);
+        plrl=R(3*(j-2)+1)+R(3*(j-2)+2)+R(3*(j-2)+3);
+        %
+        prur=U(3*j+1)-U(3*j+2)+U(3*j+3);
+        prul=U(3*(j-1)+1)+U(3*(j-1)+2)+U(3*(j-1)+3);
+        plur=U(3*(j-1)+1)-U(3*(j-1)+2)+U(3*(j-1)+3);
+        plul=U(3*(j-2)+1)+U(3*(j-2)+2)+U(3*(j-2)+3);
+        %
+        rhs(1)=rhs(1)+(prrr+prrl)*(prur+prul)/4.0-(plrr+plrl)*(plur+plul)/4.0;
+        rhs(2)=rhs(2)+(prrr+prrl)*(prur+prul)/4.0+(plrr+plrl)*(plur+plul)/4.0;
+        rhs(3)=rhs(3)+(prrr+prrl)*(prur+prul)/4.0-(plrr+plrl)*(plur+plul)/4.0;
+    end
+	P(Dof*(j-1)+1:Dof*(j-1)+Dof)=m\rhs;
+end
+% P done
+%%  calculate QT and predeclare the space for storage the numerical solution
+QT=zeros(tDof,1);
+for j=1:N  
+    uphi=U(3*(j-1)+1)*phi1+U(3*(j-1)+2)*phi2+U(3*(j-1)+3)*phi3;
+    rphi=R(3*(j-1)+1)*phi1+R(3*(j-1)+2)*phi2+R(3*(j-1)+3)*phi3;
+    pphi=P(3*(j-1)+1)*phi1+P(3*(j-1)+2)*phi2+P(3*(j-1)+3)*phi3;
+    f=3/2.0.*(uphi.*uphi)-pphi+1/2.0.*(rphi.*rphi);
+    rhs=zeros(3,1);
+    rhs(1)=sum(dphi1.*f.*jw);
+    rhs(2)=sum(dphi2.*f.*jw);
+    rhs(3)=sum(dphi3.*f.*jw); 
+    if(j==1)
+        qtrrr=R(3*j+1)-R(3*j+2)+R(3*j+3);
+        qtrrl=R(3*(j-1)+1)+R(3*(j-1)+2)+R(3*(j-1)+3);
+        qtlrr=R(3*(j-1)+1)-R(3*(j-1)+2)+R(3*(j-1)+3);
+        qtlrl=R(3*(N-1)+1)+R(3*(N-1)+2)+R(3*(N-1)+3); 
+        %
+        qtrur=U(3*j+1)-U(3*j+2)+U(3*j+3);
+        qtrul=U(3*(j-1)+1)+U(3*(j-1)+2)+U(3*(j-1)+3);
+        qtlur=U(3*(j-1)+1)-U(3*(j-1)+2)+U(3*(j-1)+3);
+        qtlul=U(3*(N-1)+1)+U(3*(N-1)+2)+U(3*(N-1)+3);
+        %
+        qtrpr=P(3*j+1)-P(3*j+2)+P(3*j+3);
+        qtrpl=P(3*(j-1)+1)+P(3*(j-1)+2)+P(3*(j-1)+3);
+        qtlpr=P(3*(j-1)+1)-P(3*(j-1)+2)+P(3*(j-1)+3);
+        qtlpl=P(3*(N-1)+1)+P(3*(N-1)+2)+P(3*(N-1)+3);
+        %
+        fr=(qtrur*qtrur+qtrur*qtrul+qtrul*qtrul)/2.0;
+        fl=(qtlur*qtlur+qtlur*qtlul+qtlul*qtlul)/2.0;
+        Br=(qtrrr*qtrrr+qtrrl*qtrrl)/4.0;
+        Bl=(qtlrr*qtlrr+qtlrl*qtlrl)/4.0;
+        %
+        rhs(1)=rhs(1)-(fr+Br-(qtrpr+qtrpl)/2.0)+(fl+Bl-(qtlpr+qtlpl)/2.0);
+        rhs(2)=rhs(2)-(fr+Br-(qtrpr+qtrpl)/2.0)-(fl+Bl-(qtlpr+qtlpl)/2.0);
+        rhs(3)=rhs(3)-(fr+Br-(qtrpr+qtrpl)/2.0)+(fl+Bl-(qtlpr+qtlpl)/2.0);
+    elseif(j==N)
+        qtrrr=R(1)-R(2)+R(3);
+        qtrrl=R(3*(j-1)+1)+R(3*(j-1)+2)+R(3*(j-1)+3);
+        qtlrr=R(3*(j-1)+1)-R(3*(j-1)+2)+R(3*(j-1)+3);
+        qtlrl=R(3*(j-2)+1)+R(3*(j-2)+2)+R(3*(j-2)+3);
+        %
+        qtrur=U(1)-U(2)+U(3);
+        qtrul=U(3*(j-1)+1)+U(3*(j-1)+2)+U(3*(j-1)+3);
+        qtlur=U(3*(j-1)+1)-U(3*(j-1)+2)+U(3*(j-1)+3);
+        qtlul=U(3*(j-2)+1)+U(3*(j-2)+2)+U(3*(j-2)+3);
+        %
+        qtrpr=P(1)-P(2)+P(3);
+        qtrpl=P(3*(j-1)+1)+P(3*(j-1)+2)+P(3*(j-1)+3);
+        qtlpr=P(3*(j-1)+1)-P(3*(j-1)+2)+P(3*(j-1)+3);
+        qtlpl=P(3*(j-2)+1)+P(3*(j-2)+2)+P(3*(j-2)+3);
+        %
+        fr=(qtrur*qtrur+qtrur*qtrul+qtrul*qtrul)/2.0;
+        fl=(qtlur*qtlur+qtlur*qtlul+qtlul*qtlul)/2.0;
+        Br=(qtrrr*qtrrr+qtrrl*qtrrl)/4.0;
+        Bl=(qtlrr*qtlrr+qtlrl*qtlrl)/4.0;
+        %
+        rhs(1)=rhs(1)-(fr+Br-(qtrpr+qtrpl)/2.0)+(fl+Bl-(qtlpr+qtlpl)/2.0);
+        rhs(2)=rhs(2)-(fr+Br-(qtrpr+qtrpl)/2.0)-(fl+Bl-(qtlpr+qtlpl)/2.0);
+        rhs(3)=rhs(3)-(fr+Br-(qtrpr+qtrpl)/2.0)+(fl+Bl-(qtlpr+qtlpl)/2.0);
+    else
+        qtrrr=R(3*j+1)-R(3*j+2)+R(3*j+3);
+        qtrrl=R(3*(j-1)+1)+R(3*(j-1)+2)+R(3*(j-1)+3);
+        qtlrr=R(3*(j-1)+1)-R(3*(j-1)+2)+R(3*(j-1)+3);
+        qtlrl=R(3*(j-2)+1)+R(3*(j-2)+2)+R(3*(j-2)+3);
+        %
+        qtrur=U(3*j+1)-U(3*j+2)+U(3*j+3);
+        qtrul=U(3*(j-1)+1)+U(3*(j-1)+2)+U(3*(j-1)+3);
+        qtlur=U(3*(j-1)+1)-U(3*(j-1)+2)+U(3*(j-1)+3);
+        qtlul=U(3*(j-2)+1)+U(3*(j-2)+2)+U(3*(j-2)+3);
+        %
+        qtrpr=P(3*j+1)-P(3*j+2)+P(3*j+3);
+        qtrpl=P(3*(j-1)+1)+P(3*(j-1)+2)+P(3*(j-1)+3);
+        qtlpr=P(3*(j-1)+1)-P(3*(j-1)+2)+P(3*(j-1)+3);
+        qtlpl=P(3*(j-2)+1)+P(3*(j-2)+2)+P(3*(j-2)+3);
+        %
+        fr=(qtrur*qtrur+qtrur*qtrul+qtrul*qtrul)/2.0;
+        fl=(qtlur*qtlur+qtlur*qtlul+qtlul*qtlul)/2.0;
+        Br=(qtrrr*qtrrr+qtrrl*qtrrl)/4.0;
+        Bl=(qtlrr*qtlrr+qtlrl*qtlrl)/4.0;
+        %
+        rhs(1)=rhs(1)-(fr+Br-(qtrpr+qtrpl)/2.0)+(fl+Bl-(qtlpr+qtlpl)/2.0);
+        rhs(2)=rhs(2)-(fr+Br-(qtrpr+qtrpl)/2.0)-(fl+Bl-(qtlpr+qtlpl)/2.0);
+        rhs(3)=rhs(3)-(fr+Br-(qtrpr+qtrpl)/2.0)+(fl+Bl-(qtlpr+qtlpl)/2.0);
+    end
+    QT(Dof*(j-1)+1:Dof*(j-1)+Dof)=m\rhs;
+end
+% QT calcuate done
+%% coef of coupling matrix
+jr=[-1/2,1/2,-1/2;-1/2,1/2,-1/2;-1/2,1/2,-1/2];
+j=[0,-1,0;-1,0,-1;0,-1,0];
+jl=[1/2,1/2,1/2;-1/2,-1/2,-1/2;1/2,1/2,1/2];
+%%  coupling matrix & RK method
+[C,M]= assemble(Dof,N,m,d,jr,j,jl);
+[Q] = RK3(tDof,Q,QT,dt,M,C,m,N,jw,phi1,phi2,phi3,dphi1,dphi2,dphi3);
+%%  time-discrete
+for K=1:NT
+    [QT1]  = getQT(tDof,Q,M,C,m,N,jw,phi1,phi2,phi3,dphi1,dphi2,dphi3);
+    [Q] = RK3(tDof,Q,QT1,dt,M,C,m,N,jw,phi1,phi2,phi3,dphi1,dphi2,dphi3);
+end
